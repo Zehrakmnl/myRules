@@ -1,0 +1,50 @@
+#Bu Sigma kuralı, dosya silme işlemlerini ve silinen dosyaya erişim, yükleme ve işlem oluşturma olaylarını algılamak için tasarlanmıştır. 
+#Kural, Sysmon ve Windows Event loglarını kullanarak şüpheli aktiviteleri tespit etmeyi amaçlar. 
+
+title:  Detect PowerShell History Deletion
+id: b4c3e0f9-f1d2-4690-bd35-ded25f5c94c2
+description: |
+  This rule detects file deletion events and associated activities such as PowerShell execution and process creation that may indicate suspicious behavior, such as the attempt to cover tracks by removing file history.
+author: zany
+date: 2024/11/29
+status: experimental
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection:
+    - EventID: 1
+      Image: "*powershell.exe"
+      CommandLine|contains: "Remove-Item (Get-PSReadlineOption).HistorySavePath"
+    - EventID: 4688  
+      Image: "*powershell.exe"
+      CommandLine|contains: "Remove-Item (Get-PSReadlineOption).HistorySavePath"
+    - EventID: 4104  
+      ScriptBlockText|contains: "Remove-Item (Get-PSReadlineOption).HistorySavePath"
+    - EventID: 23  
+      TargetFilename|contains: "psreadline"
+  condition: selection
+fields:
+  - EventID
+  - CommandLine
+  - Image
+  - TargetFilename
+  - ScriptBlockText
+level: high
+tags:
+  - attack.persistence
+  - attack.defense_evasion
+  - attack.collection
+  - attack.t1070.003  
+  - attack.t1070 
+
+# Event ID 1: Bu, yeni bir süreç başlatıldığında (Process Creation) tetiklenir. PowerShell komutunu "Remove-Item (Get-PSReadlineOption).HistorySavePath" içeren bir işlemle ilişkilendirerek, komut geçmişinin temizlenmesini tespit ediyoruz.
+# Event ID 4688: Bu, bir işlem yaratıldığında tetiklenir. PowerShell ile ilişkilendirilen işlem, aynı komutla ilişkilendirilmiştir.
+# Event ID 4104: PowerShell Script Block Logging'de kullanılan komut içeriği kontrol edilir. Burada, komut geçmişi temizleme komutunun PowerShell'de çalıştırıldığını görebiliriz.
+# Event ID 23: Bu olay, dosya silindiğinde tetiklenir. Bu durumda, dosya adı ".txt" ile bitiyorsa (genellikle komut geçmişi dosyaları), bu silme işlemi şüpheli olabilir.
+
+# MITRE ATT&CK Teknikleri:
+# T1070.003: Indicator Removal on Host, hedef makinelerdeki izleri silmeye yönelik teknik.
+# T1070: Indicator Removal, şüpheli izlerin temizlenmesi.
+
+# PowerShell Komut Geçmişini Temizleme: PowerShell üzerinde Remove-Item (Get-PSReadlineOption).HistorySavePath komutunu çalıştırarak geçmişi temizleme. 
