@@ -1,0 +1,41 @@
+title: Detect Ghost Task Scheduled Task Creation via Registry Manipulation
+id: 704333ca-cc12-4bcf-9916-101844881f54
+status: experimental
+description: |
+    GhostTask yardımcı programını ve kayıt defteri anahtarı manipülasyonunu kullanarak zamanlanmış görevlerin oluşturulmasını algılar.
+
+author: zany
+detection:
+  selection:
+    
+    EventID: 1 
+    Image|endswith: 'GhostTask.exe' 
+    CommandLine|contains: 'add' 
+    EventID: 7
+    RegistryKey|contains: 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tree'
+    RegistryValue|contains: 'add'  
+  condition: selection
+  
+  level: high
+  fields:
+    - CommandLine
+    - Image
+    - ParentProcessGuid
+    - ParentProcessId
+    - ProcessId
+    - ProcessGuid
+    - User
+    - RegistryKey
+    - RegistryValue
+  falsepositives:
+    - "Meşru yönetici veya bakım araçları tarafından zamanlanmış görev oluşturulması benzer olaylara neden olabilir."
+
+tags:
+  - attack.execution
+  - attack.persistence
+  - attack.t1053  
+
+logsource:
+  category: process_creation
+  product: windows
+
