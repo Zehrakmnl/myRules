@@ -4,7 +4,7 @@
 title:  Detect PowerShell History Deletion
 id: b4c3e0f9-f1d2-4690-bd35-ded25f5c94c2
 description: |
-  This rule detects file deletion events and associated activities such as PowerShell execution and process creation that may indicate suspicious behavior, such as the attempt to cover tracks by removing file history.
+ Bu kural, dosya geçmişini silerek izleri örtmeye çalışma gibi şüpheli davranışları gösterebilecek PowerShell yürütme ve işlem oluşturma gibi dosya silme olaylarını ve ilişkili etkinlikleri algılar.
 author: zany
 date: 2024/11/29
 status: experimental
